@@ -31,6 +31,18 @@ def index(request):
     return render(request, 'index.html', context=context)
 
 
+def perform_about(request):
+    return render(request, 'about.html')
+
+
+def perform_services(request):
+    return render(request, 'services.html')
+
+
+def perform_contacts(request):
+    return render(request, 'contacts.html')
+
+
 def postings(request):
 
     postings = Posting.objects.all()
@@ -70,7 +82,7 @@ def search(request):
     return render(request, 'search.html', {'bookings': search_results, 'query': query})
 
 
-@login_required
+# @login_required
 def post_create(request):
     if request.method == 'POST':
         form = PostForm(request.POST)
@@ -78,7 +90,7 @@ def post_create(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
-            messages.success(request, 'Your post has been created!')
+            messages.success(request, 'Sėkmingai sukurtas skelbimas!')
             return redirect('post_detail', pk=post.pk)
     else:
         form = PostForm()
@@ -88,7 +100,7 @@ def post_create(request):
     return render(request, 'posts/post_form.html', context)
 
 
-@login_required
+# @login_required
 def post_detail(request, pk):
     post = get_object_or_404(Posting, pk=pk)
     if request.method == 'POST':
@@ -98,7 +110,7 @@ def post_detail(request, pk):
             booking.post = post
             booking.booker = request.user
             booking.save()
-            messages.success(request, 'Your booking has been created!')
+            messages.success(request, 'Rezervacija sėkminga!')
             return redirect('post_detail', pk=post.pk)
     else:
         form = BookingForm()
@@ -109,7 +121,7 @@ def post_detail(request, pk):
     return render(request, 'posts/post_detail.html', context)
 
 
-@login_required
+# @login_required
 def booking_detail(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
     context = {
@@ -118,7 +130,7 @@ def booking_detail(request, pk):
     return render(request, 'posts/booking_detail.html', context)
 
 
-@login_required
+# @login_required
 def booking_cancel(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
     if request.method == 'POST':

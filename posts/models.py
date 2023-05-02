@@ -14,7 +14,6 @@ class Posting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    cover = models.ImageField('Viršelis', upload_to='covers', null=True)
 
     class Meta:
         verbose_name = 'Skelbimas'

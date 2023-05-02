@@ -1,13 +1,17 @@
 {% extends "base.html" %}
-
-{% block content %}
-<h1>Važiuoju</h1>
-<p>Sveiki atvykę į kelionių "airBnB"!</p>
-<p>Šiuo metu turime:</p>
-<ul>
-    <li><strong>Skelbimų:</strong> {{ num_postings }}</li>
-    <li><strong>Rezervacijų:</strong> {{ num_bookings }}</li>
-    <li><strong>Nepatvirtintų rezervacijų:</strong> {{ num_pending_bookings }}</li>
-</ul>
-<p>Čia jūs lankotes {{ num_visits }}-ą kartą.</p>
+{% block title %}Pradžia{% endblock %}
+{% block index %}
+<div class="container px-4">
+    <div class="row gx-4 justify-content-center">
+        <div class="col-lg-3">
+            <p>Šiuo metu turime:</p>
+            <ul>
+                <li><strong>Skelbimų:</strong> {{ num_postings }}</li>
+                <li><strong>Rezervacijų:</strong> {{ num_bookings }}</li>
+                <li><strong>Nepatvirtintų rezervacijų:</strong> {{ num_pending_bookings }}</li>
+            </ul>
+            <p>Čia jūs lankotės {{ num_visits }}-ą kartą.</p>
+        </div>
+    </div>
+</div>
 {% endblock %}
