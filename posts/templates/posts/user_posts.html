@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "main/base.html" %}
 
 {% block content %}
-<h1>Skelbimai</h1>
+<h1>{{user.name}} skelbimai</h1>
 <p>Skelbimų sąrašas.</p>
 {% for a in postings %}
 <li><a href="{% url 'posting' a.id %}">{{a.start_location}} -> {{a.end_location}}</a></li>

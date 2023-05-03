@@ -15,28 +15,17 @@ Including another URLconf
 """
 from django.urls import path, include
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
-from posts.views import (
-    index,
-    PostListView,
-    PostCreateView,
-    PostUpdateView,
-    PostDeleteView,
-    UserPostListView
-)
+from register import views as v
+from rest_framework.authtoken.views import obtain_auth_token
+
 
 urlpatterns = [
-    path('posts/', include('posts.urls')),
+    path('', include('posts.urls')),
+    path('register/', v.register, name="register"),
+    path('', include("django.contrib.auth.urls")),
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(url='posts/', permanent=True)),
-    path('', PostListView.as_view(), name='home'),
-    path('post/new/', PostCreateView.as_view(), name='post-create'),
-    path('post/<int:pk>/', PostUpdateView.as_view(), name='post-update'),
-    path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),
-    path('user/<str:username>/', UserPostListView.as_view(), name='user-posts'),
-    path('api-auth/', include('rest_framework.urls')),
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
 ] + (static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) +
      static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT))

@@ -1,0 +1,25 @@
+{% extends "main/base.html" %}
+{% block title %}Pradžia{% endblock %}
+{% block content %}
+<header class="bg-primary bg-gradient text-white">
+    <div class="container px-4 text-center">
+        <h1 class="fw-bolder">Sveiki atvykę į Važiuojam!</h1>
+        <p class="lead">
+        <div class="container px-4">
+            <div class="row gx-4 justify-content-center">
+                <div class="col-lg-3">
+                    <p>Šiuo metu turime:</p>
+                    <ul>
+                        <li><strong>Skelbimų:</strong> {{ num_postings }}</li>
+                        <li><strong>Rezervacijų:</strong> {{ num_bookings }}</li>
+                        <li><strong>Nepatvirtintų rezervacijų:</strong> {{ num_pending_bookings }}</li>
+                    </ul>
+                    <p>Čia jūs lankotės {{ num_visits }}-ą kartą.</p>
+                </div>
+            </div>
+        </div>
+        </p>
+        <a class="btn btn-lg btn-light" href="{% url 'postings' %}">Pradėkime kelionę!</a>
+    </div>
+</header>
+{% endblock %}

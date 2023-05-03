@@ -3,6 +3,8 @@ from .models import Posting, Booking, Review, Message
 
 
 class PostForm(forms.ModelForm):
+    title = forms.CharField(label="Title", max_length=200)
+
     class Meta:
         model = Posting
         fields = ['title', 'description', 'start_location',
