@@ -1,0 +1,11 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="container posting">
+  <h1>{{ booking.posting.title }}</h1>
+
+  <p><strong>Vartotojas:</strong> <a href="{% url 'user' booking.user.pk %}">{{ booking.user }}</a></p>
+  <p><strong>Aprašymas:</strong> {{ booking.posting.description }}</p>
+  <p><strong>Statusas:</strong> {{ booking.status }}</p>
+</div>
+{% endblock %}

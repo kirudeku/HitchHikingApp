@@ -12,7 +12,7 @@ class PostingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Posting
-        fields = ['id', 'user', 'user_id', 'title', 'description', 'start_location', 'end_location',
+        fields = ['id', 'username', 'user', 'user_id', 'title', 'description', 'start_location', 'end_location',
                   'start_time', 'available_seats', 'price', 'likes', 'review_count', 'reviews', 'created_at', 'updated_at']
 
     def get_review_count(self, obj):

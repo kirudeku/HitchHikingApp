@@ -1,0 +1,9 @@
+{% extends 'main/base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<form method="post" class="form-group">
+    {% csrf_token %}
+    {{form|crispy}}
+    <button type="submit" class="btn btn-info" label="update">Redaguoti</button>
+</form>
+{% endblock %}

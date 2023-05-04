@@ -1,12 +1,13 @@
 {% extends "main/base.html" %}
 
 {% block content %}
-<h1>{{user.username}} skelbimai</h1>
+<h1>Visi skelbimai</h1>
 {% for a in postings %}
 <table class="table table-striped table-dark">
     <thead>
         <tr>
             <th scope="col">Eilės numeris</th>
+            <th scope="col">Sukūrė</th>
             <th scope="col">Iš</th>
             <th scope="col">Į</th>
             <th scope="col">Kelionės laikas</th>
@@ -17,7 +18,8 @@
     </thead>
     <tbody>
         <tr>
-            <th scope="row"><a href="{% url 'post-detail' a.id %}">{{a.id}}</th></a>
+            <th scope="row"><a href="{% url 'posting' a.id %}">{{a.id}}</th></a>
+            <td>{{a.user}}</td>
             <td>{{a.start_location}}</td>
             <td>{{a.end_location}}</td>
             <td>{{a.start_time}}</td>
@@ -27,6 +29,7 @@
         </tr>
     </tbody>
 </table>
+<button type="button" class="btn btn-light"></button>
 {% empty %}
 <p>Nerasta skelbimų.</p>
 {% endfor %}

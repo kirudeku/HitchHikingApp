@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
+from decimal import Decimal
 
 
 class Posting(models.Model):
@@ -9,16 +11,16 @@ class Posting(models.Model):
     start_location = models.CharField(max_length=255)
     end_location = models.CharField(max_length=255)
     start_time = models.DateTimeField()
-    available_seats = models.PositiveIntegerField()
+    available_seats = models.PositiveIntegerField(default=4)
     price = models.DecimalField(
-        max_digits=8, decimal_places=2, help_text="Kaina eurais")
+        max_digits=8, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))], help_text="Kaina eurais")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="posting", null=True)
 
     class Meta:
-        ordering = ['-created_at',]
+        ordering = ['start_time',]
         verbose_name = 'Skelbimas'
         verbose_name_plural = 'Skelbimai'
 
@@ -26,7 +28,7 @@ class Posting(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('posting_detail', kwargs={'posting_id': self.id})
+        return reverse('post-detail', kwargs={'pk': self.pk})
 
     def get_title_length(self):
         return len(self.title)

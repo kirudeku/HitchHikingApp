@@ -54,23 +54,12 @@ def postings(request):
         'postings': postings
     }
     print(postings)
-    return render(request, 'main/postings.html', context=context)
+    return render(request, 'posts/postings.html', context=context)
 
 
 def posting(request, posting_id):
     single_posting = get_object_or_404(Posting, pk=posting_id)
-    return render(request, 'main/posting.html', {'posting': single_posting})
-
-
-class BookingListView(generic.ListView):
-    model = Booking
-    paginate_by = 2
-    template_name = 'main/booking_list.html'
-
-
-class BookingDetailView(generic.DetailView):
-    model = Booking
-    template_name = 'main/booking_detail.html'
+    return render(request, 'posts/posting.html', {'posting': single_posting})
 
 
 def search(request):
@@ -81,78 +70,76 @@ def search(request):
     didžiosios/mažosios.
     """
     query = request.GET.get('query')
-    search_results = Booking.objects.filter(
-        Q(title__icontains=query) | Q(summary__icontains=query))
-    return render(request, 'main/search.html', {'bookings': search_results, 'query': query})
+    search_results = Posting.objects.filter(
+        Q(title__icontains=query) | Q(description__icontains=query) | Q(start_location__icontains=query)| Q(end_location__icontains=query)| Q(start_time__icontains=query)| Q(available_seats__icontains=query)| Q(price__icontains=query))
+    return render(request, 'main/search.html', {'posting': search_results, 'query': query})
 
 
 @login_required
-def posting_create(response):
-    if response.method == 'POST':
-        form = PostForm(response.POST)
-
-        if form.is_valid():
-            posting = form.save(commit=False)
-            posting.author = response.user
-            posting.save()
-            posting.author.posting.add()
-            messages.success(response, 'Sėkmingai sukurtas skelbimas!')
-            return redirect('posting_detail', pk=posting.pk)
-    else:
-        form = PostForm()
+def booking_detail(response, pk):
+    booking = get_object_or_404(Booking, pk=pk)
     context = {
-        'form': form,
+        'booking': booking,
     }
-    return render(response, 'posts/post_form.html', context)
+    return render(response, 'posts/booking_detail.html', context)
 
 
 @login_required
-def posting_detail(response, pk):
-    posting = get_object_or_404(Posting, pk=pk)
+def booking_cancel(response, pk):
+    booking = get_object_or_404(Booking, pk=pk)
     if response.method == 'POST':
-        form = BookingForm(response.POST)
+        booking.delete()
+        messages.success(response, 'Rezervacija atšaukta sėkmingai!')
+        return redirect('post-detail', pk=booking.post.pk)
+    context = {
+        'booking': booking,
+    }
+    return render(response, 'posts/booking_cancel.html', context)
+
+# -----------------------------------Posting view classes----------------------------
+class PostCreateView(LoginRequiredMixin, generic.CreateView):
+    model = Posting
+    form_class = PostForm
+    template_name = 'posts/post_form.html'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        response = super().form_valid(form)
+        self.object.save()
+        self.success_url = reverse_lazy(
+            'post-detail', kwargs={'pk': self.object.pk})
+        return response
+
+
+class PostDetailView(generic.DetailView):
+    model = Posting
+    template_name = 'posts/post_detail.html'
+    context_object_name = 'posting'
+
+    def post(self, request, *args, **kwargs):
+        posting = self.get_object()
+        form = BookingForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
             booking.posting = posting
-            booking.booker = response.user
+            booking.booker = request.user
             booking.save()
-            messages.success(response, 'Rezervacija sėkminga!')
-            return redirect('posting_detail', pk=posting.pk)
-    else:
-        form = BookingForm()
-    context = {
-        'posting': posting,
-        'form': form,
-    }
-    return render(response, 'posts/posting_detail.html', context)
+            messages.success(request, 'Rezervacija sėkminga!')
+            return redirect('post-detail', pk=posting.pk)
+        else:
+            context = self.get_context_data(object=self.object, form=form)
+            return self.render_to_response(context)
 
-
-# @login_required
-def booking_detail(request, pk):
-    booking = get_object_or_404(Booking, pk=pk)
-    context = {
-        'booking': booking,
-    }
-    return render(request, 'posts/booking_detail.html', context)
-
-
-# @login_required
-def booking_cancel(request, pk):
-    booking = get_object_or_404(Booking, pk=pk)
-    if request.method == 'POST':
-        booking.delete()
-        messages.success(request, 'Your booking has been canceled!')
-        return redirect('posting_detail', pk=booking.post.pk)
-    context = {
-        'booking': booking,
-    }
-    return render(request, 'posts/booking_cancel.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = BookingForm()
+        return context
 
 
 class PostListView(generic.ListView):
     model = Posting
-    template_name = 'posts/post_list.html'
-    context_object_name = 'posts'
+    template_name = 'posts/postings.html'
+    context_object_name = 'postings'
     ordering = ['-created_at']
     paginate_by = 10
 
@@ -160,7 +147,8 @@ class PostListView(generic.ListView):
 class UserPostListView(LoginRequiredMixin, generic.ListView):
     model = Posting
     template_name = 'posts/user_posts.html'
-    context_object_name = 'posts'
+    context_object_name = 'postings'
+    success_url = reverse_lazy('user-posts')
     paginate_by = 10
 
     def get_queryset(self):
@@ -168,36 +156,59 @@ class UserPostListView(LoginRequiredMixin, generic.ListView):
         return Posting.objects.filter(user=user).order_by('-created_at')
 
 
-class PostCreateView(LoginRequiredMixin, generic.CreateView):
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
     model = Posting
     form_class = PostForm
     template_name = 'posts/post_form.html'
-    success_url = reverse_lazy('posts:post-list')
+    label = 'update'
+
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
-
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
-    model = Posting
-    form_class = PostForm
-    template_name = 'posts/post_form.html'
-    success_url = reverse_lazy('posts:post-list')
-
     def test_func(self):
         post = self.get_object()
-        return self.request.user == post.user
+        if self.request.user == post.user:
+            return True
 
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = Posting
     template_name = 'posts/post_confirm_delete.html'
-    success_url = reverse_lazy('posts:post-list')
+    success_url = reverse_lazy('postings')
 
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.user
+    
+# ---------------------------Booking view classes------------------------------------
+    
+class BookingCreateView(LoginRequiredMixin, generic.CreateView):
+    model = Booking
+    form_class = BookingForm
+    template_name = 'bookings/booking_form.html'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        form.instance.status = 'PENDING'
+        form.instance.posting_id = self.kwargs['pk']
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('posting-detail', kwargs={'pk': self.kwargs['pk']})    
+
+class BookingListView(generic.ListView):
+    model = Booking
+    paginate_by = 2
+    template_name = 'posts/booking_list.html'
+
+
+class BookingDetailView(generic.DetailView):
+    model = Booking
+    template_name = 'posts/booking_detail.html'
 
 # ----------------------------------------TRIED SOME DRF----------------------------------------
 
